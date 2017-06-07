@@ -28,9 +28,19 @@ class WirelessDebug {
 
   /** Handles WebSocket opening */
   websocketOnOpen() {
+
+    // Extract the api key from the cookies on the web page.
+    let cookieStrings = document.cookie.replace(/['"]+/g, '').split("; ");
+    let cookies = {};
+    for(let i = 0; i < cookieStrings.length; i++) {
+      let [cookieKey, cookieVal] = cookieStrings[i].split("=");
+      cookies[cookieKey] = cookieVal;
+    }
+    console.log(cookies);
+
     let payload = {
       messageType: 'associateUser',
-      apiKey: "",
+      apiKey: cookies['api_key'] || "",
     };
 
     this.ws_.send(JSON.stringify(payload));

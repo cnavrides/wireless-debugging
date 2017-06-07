@@ -131,3 +131,4 @@ def associate_user(message, websocket, metadata):
     # TODO: Currently we only have one session, when we implement multiple
     #       connections, modify this to handle it.
     _web_interface_ws_connections[websocket] = message['apiKey']
+    

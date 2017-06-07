@@ -15,17 +15,24 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
     """
 
     def __init__(self):
-        self.user_key_table = "key_table.txt"
+        self.user_key_table = 'key_table.txt'
+        self.login_fields_path = 'user_management_interfaces/email_login.xhtml'
 
     def get_login_ui(self, base_url):
-        """Unused, but abstract so needs an implementation"""
+        """ Returns XHTML containing a login form. 
 
-        login_fields_file = open('user_management_interfaces/email_login.xhtml',
-                                 'r')
+        Args:
+            class members:
+                login_fields_path: 
+                    String, contains the path to the file that contains the
+                    XHTML.
+        Returns:
+            An XHTML page containing the login form.
+        """
+        login_fields_file = open(self.login_fields_path, 'r')
         login_fields = login_fields_file.read()
         login_fields_file.close()
 
-        print(login_fields)
         return login_fields
 
     def is_user_logged_in(self, request):
@@ -33,31 +40,54 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             return true. Otherwise return false.
 
         Args:
-            A Bottle request object
+            A Bottle request object. Used to retrive cookies from the user's
+            browser.
         Returns:
-            Always returns a boolean true
+            A boolean, returns true if the cookie is found and the cookie is
+            legitimate. False otherwise.
         """
 
         # Check if the user's already logged in,
-        print("eh")
-        blep = request.get_cookie("api_key")
-        print(blep, "type:", type(blep))
-        print("it's here")
-        if request.get_cookie("api_key"):
+        if request.get_cookie('api_key'):
             # ... and that the api key they have is valid.
-            api_key = request.get_cookie("api_key")
+            api_key = request.get_cookie('api_key')
             if self.exists_in_table(api_key, False):
                 return True
             
         return False
 
     def handle_login(self, form_data, request, response):
-        """Function is unused, but is abstract so needs to be implemented"""
+        """ Checks if the user is in the user to api key table. If they are
+            returns true. If not adds the user to the table and returns true
+            with an additional message.
 
-        user_email = form_data.get("username")
+        Args:
+            form_data:
+                The form data from the ('/login') post from bottle. Only
+                contains a 'username' field where the user's email is supposed
+                to go, though it doesn't explicitly have to be a user's email.
+            request:
+                A bottle request object. Used to get the api_key for the user.
+            response:
+                A bottle response object. Used to manipulate cookies cookie's on
+                the user's browser.
+        Returns:
+            A tuple containing:
+                login_successful: Boolean, returns true if the login was
+                    successful. Returns false otherwise.
+                error_message: String, returns a message describing why the 
+                    login failed if login_successful is false. If 
+                    login_successful is true, this can return either a blank
+                    string or log message to describe anything important.
+            Also sets a cookie in the user's browser containing their api key.
+        """
+
+        user_email = form_data.get('username')
 
         if self.exists_in_table(user_email, True):
-            return (True, "")
+            response.set_cookie('api_key', 
+                                self.get_api_key_for_user(request))
+            return (True, '')
         else:
             user_key_file = open(self.user_key_table, 'a')
             user_key_file.write(user_email + ',' + user_email + '\n')
@@ -66,14 +96,29 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             # This should be a trivial test since we just added the entry, but
             # just in case
             if self.exists_in_table(user_email, True):
-                return (True, "New user! Adding to users table.")
+                response.set_cookie('api_key', 
+                                    self.get_api_key_for_user(request))
+                return (True, 'New user! Adding to users table.')
 
-        return (False, "Failed to login! User does not exist in table!")
+        return (False, 'Failed to login! User does not exist in table!')
 
 
     def get_api_key_for_user(self, request):
         """Unused, but abstract so needs implementation"""
-        return ""
+
+        user_key_table = self.get_table()
+
+        """
+        user_list = [table_row[0] for table_row in user_key_table]
+        row_index = user_list.index(request.forms.get('username'))
+        return user_key_table[row_index][1]
+        """
+
+        # This should probably be refactored, but it's pretty awesome
+        # ... and terrifying
+        return request.get_cookie('api_key') or user_key_table[
+            [table_row[0] for table_row in user_key_table].index(
+                request.forms.get('username'))][1]
 
     def find_associated_websockets(self, api_key, websocket_connections):
         """ We can't tell the difference between users,
@@ -86,6 +131,30 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             The list of WebSockets that go to web UIs
         """
         return websocket_connections
+
+    def get_table(self):
+        """ Returns the table of users to api keys as a 2D list. 
+    
+        Args:
+            class members:
+                user_key_table: String, the path to the user to api key table.
+        Returns:
+            None if the file doesn't exist.
+            A list of tuples containing the table of users to api keys
+            otherwise.
+        """
+
+        # If the table doesn't exist yet, then they can't exist in the table
+        if not os.path.isfile(self.user_key_table):
+            return None
+
+        with open(self.user_key_table, 'r') as user_key_file:    
+            # Splits each row of the file by comma, yielding an email and an api
+            # key.
+            user_key_table = [(line.split(',')[0], line.split(',')[1]) 
+                              for line in user_key_file.read().splitlines()]
+
+        return user_key_table
 
     def exists_in_table(self, user_key, is_user):
         """ Checks if a given API key or user exists in the user to api key
@@ -100,15 +169,9 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             Boolean, true if the key existed in the table, false otherwise.
         """
 
-        # If the table doesn't exist yet, then they can't exist in the table
-        if not os.path.isfile(self.user_key_table):
+        user_key_table = self.get_table()
+        if not user_key_table:
             return False
-
-        user_key_file = open(self.user_key_table, 'r')
-        # Splits each row of the file by comma, yielding an email and an api key
-        # I'm not sorry ... probably be refactored soon
-        user_key_table = [(line.split(',')[0], line.split(',')[1]) 
-                          for line in user_key_file.read().splitlines()]
 
         # 0 is for users, 1 is for api keys
         check_index = 0 if is_user else 1

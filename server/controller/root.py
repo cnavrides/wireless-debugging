@@ -31,7 +31,8 @@ def index():
 
     """
 
-    print(controller.user_management_interface.is_user_logged_in(request))
+    print('User is logged in:', 
+          controller.user_management_interface.is_user_logged_in(request))
     if not controller.user_management_interface.is_user_logged_in(request):
         redirect('/login_page')
 
@@ -75,7 +76,7 @@ def login():
 
     # TODO: Change base_url to be relative URL
     url = "http://%s:%s" % (hostname, str(port))
-
+    
     return {
         "login_fields": Markup(
             controller.user_management_interface.get_login_ui(url))

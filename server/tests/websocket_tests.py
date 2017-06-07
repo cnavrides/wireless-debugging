@@ -1,8 +1,9 @@
 """
-Tests components of the websocket controller
+Tests components of the websocket controller.
 """
 
 from controller import websocket
+
 
 class DummySocket:
     """ A dummy websocket class.
@@ -16,7 +17,7 @@ class DummySocket:
         self.sent_messages = []
 
     def send(self, message):
-        """ Tracks the messages sent by send message """
+        """ Tracks the messages sent by send message. """
         self.sent_messages.append(message)
 
     def receive(self):
@@ -31,7 +32,7 @@ class DummySocket:
 
 def test_start_session():
     """ Verifies that start session passes all of data from message into
-        metadata where it can be stored for the lifetime of the websocket
+        metadata where it can be stored for the lifetime of the websocket.
     """
     socket = DummySocket()
     _metadata = {}
@@ -46,10 +47,11 @@ def test_start_session():
     websocket._ws_routes[message['messageType']](message, socket, _metadata)
     assert message == _metadata
 
+
 def test_associate_user():
     """ Verifies that when a user connects the server on a web UI their 
         connection is tied to some metadata stored in a private array,
-        specifically their API key
+        specifically their API key.
     """
     socket = DummySocket()
     _metadata = {}

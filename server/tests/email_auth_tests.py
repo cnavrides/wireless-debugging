@@ -8,9 +8,10 @@ from user_management_interfaces import email_auth
 from bottle import request, response
 
 def test_get_login():
-    """ Verify that the login UI is read from fie and returned properly. 
+    """ Verify that the login UI is read from fie and returned properly.
+
         This test needs to run from the server folder so that the pathing is
-        consistent
+        consistent.
     """
     umi = email_auth.EmailAuth()
     base_url = 'http://0.0.0.0:80'
@@ -37,7 +38,8 @@ def test_get_login():
 def test_exists_in_table():
     """ Tests that the checking if a user or an api key exists in the table
         works. Also verifies that if they don't exist that this function returns
-        false. This is higher up because later functions rely on it.
+        false. This is higher up because later functions rely on 
+        exists_in_table().
     """
     umi = email_auth.EmailAuth()
     umi.user_key_table = 'temp_file.txt'
@@ -80,7 +82,7 @@ def test_user_logged_in():
 
 
 class dummyForm:
-    """ A placeholder form that gets inserted into the handle_login function
+    """ A placeholder form that gets inserted into the handle_login function.
     """
     
     def __init__(self):
@@ -98,7 +100,7 @@ def test_handle_new_login():
         table, and verify that they successfully log in.
     """
     umi = email_auth.EmailAuth()
-    # It'd be nice to actualy make this a temp file
+    # It'd be nice to actualy make this a temp file.
     umi.user_key_table = 'temp_file.txt' 
 
     form = dummyForm()
@@ -114,7 +116,7 @@ def test_handle_returning_login():
         without any diagnostic messages.
     """
     umi = email_auth.EmailAuth()
-    # It'd be nice to actualy make this a temp file
+    # It'd be nice to actualy make this a temp file.
     umi.user_key_table = 'temp_file.txt'
 
     test_username = 'test@test.com'

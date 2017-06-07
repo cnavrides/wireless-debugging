@@ -35,17 +35,17 @@ class NoAuth(user_management_interface_base.UserManagementInterfaceBase):
         return (True, "")
 
     def get_api_key_for_user(self, request):
-        """ Unused, but abstract so needs implementation"""
+        """ Unused, but abstract so needs implementation. """
         return ""
 
     def find_associated_websockets(self, api_key, websocket_connections):
-        """ We can't tell the difference between users,
-           so we just broadcast to everyone
+        """ We can't tell the difference between users, so we just broadcast to
+            everyone.
 
         Args:
-            The API Key, but this is an arbitrary value
-            The list of WebSockets that go to web UIs
+            api_key: The API Key, but this is an arbitrary value.
+            websocket_connections: The list of WebSockets that go to web UIs.
         Returns:
-            The list of WebSockets that go to web UIs
+            The list of WebSockets that go to web UIs.
         """
         return websocket_connections

@@ -1,6 +1,6 @@
 """
 A simple form of 'authorization' where the user enters their email. 
-THIS ISN'T A SECURE METHOD OF AUTHORIZATION. This just enables a server to
+THIS IS NOT A SECURE METHOD OF AUTHORIZATION. This just enables a server to
 direct log files to specific machines, rather than having the logs be broadcast
 to all web UI websockets.
 """
@@ -23,9 +23,8 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
 
         Args:
             class members:
-                login_fields_path: 
-                    String, contains the path to the file that contains the
-                    XHTML.
+                login_fields_path: String, contains the path to the file that 
+                    contains the XHTML.
         Returns:
             An XHTML page containing the login form.
         """
@@ -40,8 +39,8 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             return true. Otherwise return false.
 
         Args:
-            A Bottle request object. Used to retrive cookies from the user's
-            browser.
+            request: A Bottle request object. Used to retrive cookies from the 
+                user's browser.
         Returns:
             A boolean, returns true if the cookie is found and the cookie is
             legitimate. False otherwise.
@@ -63,14 +62,12 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             with an additional message.
 
         Args:
-            form_data:
-                The form data from the ('/login') post from bottle. Only
+            form_data: The form data from the ('/login') post from bottle. Only
                 contains a 'username' field where the user's email is supposed
                 to go, though it doesn't explicitly have to be a user's email.
-            request:
-                A bottle request object. Used to get the api_key for the user.
-            response:
-                A bottle response object. Used to manipulate cookies cookie's on
+            request: A bottle request object. Used to get the api_key for the
+                user.
+            response: A bottle response object. Used to manipulate cookies on
                 the user's browser.
         Returns:
             A tuple containing:
@@ -95,7 +92,7 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             user_key_file.close()
 
             # This should be a trivial test since we just added the entry, but
-            # just in case
+            # just in case.
             if self.exists_in_table(user_email, True):
                 response.set_cookie('api_key', 
                                     self.get_api_key_for_user(request))
@@ -108,9 +105,8 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
         """ Gets the API key for the user.
 
         Args:
-            request:
-                A bottle request object. Used to retrieve cookies. Specifically 
-                retrives the 'api_key' cookie.
+            request: A bottle request object. Used to retrieve cookies. 
+                Specifically retrives the 'api_key' cookie.
         Returns:
             A string, containing the api key for the user.
         """
@@ -137,19 +133,12 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
                         request.forms.get('username'))][1])
 
     def find_associated_websockets(self, api_key, websocket_connections):
-        """ We can't tell the difference between users,
-            so we just broadcast to everyone
-
-        Args:
-            api_key: The API Key, but this is an arbitrary value
-            websocket_connections: The list of WebSockets that go to web UIs
-        Returns:
-            The list of WebSockets that go to web UIs
-        """
+        # TODO: Make it so that this function returns a list of websockets that
+        #       correspond with the given api_key
         return websocket_connections
 
     def get_table(self):
-        """ Returns the table of users to api keys as a 2D list. 
+        """ Returns the table of users to api keys as a list of tuples. 
     
         Args:
             class members:
@@ -160,7 +149,7 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
             otherwise.
         """
 
-        # If the table doesn't exist yet, then they can't exist in the table
+        # If the table doesn't exist yet, then they can't exist in the table.
         if not os.path.isfile(self.user_key_table):
             return None
 

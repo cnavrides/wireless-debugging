@@ -24,8 +24,8 @@ def handle_websocket():
     """ Handle an incomming WebSocket connection.
 
     This function handles incomming WebSocket connections and waits for
-    incomming messages from the connection. When a message is recieved, it
-    calls the appropriate function.
+    incoming messages from the connection. When a message is recieved, it calls
+    the appropriate function.
     """
 
     websocket = request.environ.get('wsgi.websocket')
@@ -59,7 +59,8 @@ def handle_websocket():
 
 
 def ws_router(message_type):
-    """ Provide a decorator for adding functions to the _ws_route dictionary """
+    """ Provide a decorator for adding functions to the _ws_route dictionary.
+    """
 
     def decorator(function):
         _ws_routes[message_type] = function
@@ -73,22 +74,22 @@ def start_session(message, websocket, metadata):
         websocket receiving the raw logs.
     """
 
-    # There's probably a better way to do this and it should be refactored
+    # There's probably a better way to do this and it should be refactored.
     for attribute, value in message.items():
-        print('attribute:', attribute, " value:", value)
         metadata[attribute] = value
 
 
 @ws_router('logDump')
 def log_dump(message, websocket, metadata):
-    """ Handles Log Dumps from the Mobile API
+    """ Handles Log Dumps from the Mobile API.
 
     When a log dump comes in from the Mobile API, this function takes the raw
     log data, parses it and sends the parsed data to all connected web clients.
 
     Args:
-        message: the decoded JSON message from the Mobile API
-        websocket: the full websocket connection
+        message: The decoded JSON message from the Mobile API.
+        websocket: The websocket connection object where the log is being
+            received.
     """
 
     parsed_logs = LogParser.parse(message)
@@ -115,16 +116,18 @@ def end_session(message, websocket, metadata):
 
 @ws_router('associateUser')
 def associate_user(message, websocket, metadata):
-    """ Associates a WebSocket connection with a session
+    """ Associates a Web UI WebSocket connection with a session.
 
     When a browser requests to be associated with a session, add the associated
     WebSocket connection to the list connections for that session.
 
     Args:
-        message: the decoded JSON message from the Mobile API
-        websocket: the full websocket connection
+        message: The decoded JSON message from the Mobile API. Contains the api
+            key for the user.
+        websocket: The websocket connection object where the log is being
+            received.
     """
 
     # TODO: Currently we only have one session, when we implement multiple
-    #       connections, modify this to handle it
+    #       connections, modify this to handle it.
     _web_interface_ws_connections[websocket] = message['apiKey']

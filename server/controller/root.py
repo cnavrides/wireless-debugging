@@ -23,7 +23,7 @@ def index():
     Args:
         None
     Returns:
-        If the user is not logged in, redirects them to the login page
+        If the user is not logged in, redirects them to the login page.
         Otherwise this returns a webpage specified in the kajiki view decorator
         with the additional values in a dictionary.
         page: The page that Kajiki should show.
@@ -68,8 +68,6 @@ def login():
         decorator. This function also returns a subcomponent of a webpage that
         defines the format of the login page, which is specified in the user
         management interface. 
-
-        Currently defunct
     """
     hostname = from_config_yaml('hostname')
     port = from_config_yaml('port') or 80
@@ -90,7 +88,7 @@ def handle_login():
                                                           request, response))
 
     # If handle_login returned a string, it means it failed and returned an 
-    # error message
+    # error message.
     if not login_successful:
         # TODO: Make better error handling
         print("Something went wrong!:", error_message)

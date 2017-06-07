@@ -5,8 +5,8 @@ Defines the interface for user management interfaces.
 class UserManagementInterfaceBase:
     """The user management inferface definition.
         
-        The set of necessary functions a user needs to implement in order
-        to use user authentication on their server.
+        The set of necessary functions a user needs to implement in order to use
+        user authentication on their server.
     """
 
     # TODO: Change base_url to be relative URL
@@ -16,7 +16,7 @@ class UserManagementInterfaceBase:
         Args:
             base_url: String, the base URL for the app.
         Returns:
-            String, contains the HTML for the login UI. This HTML should inlude
+            String, contains the HTML for the login UI. This HTML should include
             an HTML form which posts to the login URL.
         """ 
         raise NotImplementedError
@@ -70,7 +70,7 @@ class UserManagementInterfaceBase:
                 websocket_connections: a list of all Websocket connections to
                 Web UI's connected to the Web App Backend.
             Returns:
-                A list of WebSocket connections to send the logs to.
-                (This should be a subset of websocket_connections)
+                A list of WebSocket connections to send the logs to (this 
+                should be a subset of websocket_connections).
         """
         raise NotImplementedError

@@ -44,7 +44,9 @@ class NoAuth(user_management_interface_base.UserManagementInterfaceBase):
 
         Args:
             api_key: The API Key, but this is an arbitrary value.
-            websocket_connections: The list of WebSockets that go to web UIs.
+            websocket_connections: A dictionary of api keys to associated
+                websockets. There should only be a single key that's a blank
+                string with a single array of websockets.
         Returns:
             The list of WebSockets that go to web UIs.
         """

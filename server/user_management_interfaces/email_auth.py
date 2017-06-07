@@ -51,6 +51,7 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
         if request.get_cookie('api_key'):
             # ... and that the api key they have is valid.
             api_key = request.get_cookie('api_key')
+            print(api_key)
             if self.exists_in_table(api_key, False):
                 return True
             
@@ -104,11 +105,24 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
 
 
     def get_api_key_for_user(self, request):
-        """Unused, but abstract so needs implementation"""
+        """ Gets the API key for the user.
+
+        Args:
+            request:
+                A bottle request object. Used to retrieve cookies. Specifically 
+                retrives the 'api_key' cookie.
+        Returns:
+            A string, containing the api key for the user.
+        """
 
         user_key_table = self.get_table()
 
-        """
+        """ The less cool version of what's below
+        api_key_cookie = request.get_cookie('api_key')
+        if api_key_cookie and self.exists_in_table(
+            request.get_cookie('api_key', False)):
+            return api_key_cookie
+
         user_list = [table_row[0] for table_row in user_key_table]
         row_index = user_list.index(request.forms.get('username'))
         return user_key_table[row_index][1]
@@ -116,9 +130,11 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
 
         # This should probably be refactored, but it's pretty awesome
         # ... and terrifying
-        return request.get_cookie('api_key') or user_key_table[
-            [table_row[0] for table_row in user_key_table].index(
-                request.forms.get('username'))][1]
+        return (request.get_cookie('api_key') if request.get_cookie('api_key') 
+                and self.exists_in_table(request.get_cookie('api_key'), False) 
+                else user_key_table[
+                    [table_row[0] for table_row in user_key_table].index(
+                        request.forms.get('username'))][1])
 
     def find_associated_websockets(self, api_key, websocket_connections):
         """ We can't tell the difference between users,

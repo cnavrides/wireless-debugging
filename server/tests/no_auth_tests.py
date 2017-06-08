@@ -8,6 +8,7 @@ These are pretty trivial tests.
 
 from user_management_interfaces import no_auth
 from bottle import request, response
+from tests.dummy_socket import DummySocket
 
 def test_get_login():
     """ Verify that the login UI doesn't exist, and that a blank HTML page is
@@ -50,8 +51,15 @@ def test_find_websockets():
     """
     umi = no_auth.NoAuth()
     api_key = ""
-    websockets = []
-    for i in range(5):
-        websockets.append(request.environ.get("wsgi.websocket"))
+    websockets = {
+        'a': [DummySocket() for i in range(5)],
+        'b': [DummySocket() for i in range(3)],
+        'c': [DummySocket() for i in range(7)],
+    }
+
+    # The expected result is the concatenation of the above lists
+    desired_result = []
+    for api_keys, ws_lists in websockets.items():
+        desired_result += ws_lists
     
-    assert umi.find_associated_websockets(api_key, websockets) == websockets
+    assert umi.find_associated_websockets(api_key, websockets) == desired_result

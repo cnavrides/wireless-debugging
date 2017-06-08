@@ -6,6 +6,7 @@ Root Controller
 from bottle import abort, post, redirect, request, response, route, static_file
 from helpers.util import from_config_yaml
 from kajiki_view import kajiki_view
+from markupsafe import Markup
 
 import controller
 
@@ -22,7 +23,7 @@ def index():
     Args:
         None
     Returns:
-        If the user is not logged in, redirects them to the login page
+        If the user is not logged in, redirects them to the login page.
         Otherwise this returns a webpage specified in the kajiki view decorator
         with the additional values in a dictionary.
         page: The page that Kajiki should show.
@@ -30,6 +31,8 @@ def index():
 
     """
 
+    print('User is logged in:', 
+          controller.user_management_interface.is_user_logged_in(request))
     if not controller.user_management_interface.is_user_logged_in(request):
         redirect('/login_page')
 
@@ -52,6 +55,7 @@ def static(filepath):
 
 
 @route('/login_page')
+@kajiki_view('login')
 def login():
     """ Retrieves the login page from the user management interface and serves
         it to the user.
@@ -64,18 +68,17 @@ def login():
         decorator. This function also returns a subcomponent of a webpage that
         defines the format of the login page, which is specified in the user
         management interface. 
-
-        Currently defunct
     """
     hostname = from_config_yaml('hostname')
     port = from_config_yaml('port') or 80
 
     # TODO: Change base_url to be relative URL
     url = "http://%s:%s" % (hostname, str(port))
+    
     return {
-        'login_fields': controller.user_management_interface.get_login_ui(url),
+        "login_fields": Markup(
+            controller.user_management_interface.get_login_ui(url))
     }
-
 
 @post('/login')
 def handle_login():
@@ -85,10 +88,30 @@ def handle_login():
                                                           request, response))
 
     # If handle_login returned a string, it means it failed and returned an 
-    # error message
+    # error message.
     if not login_successful:
         # TODO: Make better error handling
         print("Something went wrong!:", error_message)
         abort(403, "Login failed, error: %s" % error_message)
     else:
         redirect('/')
+
+@route('/logout')
+def logout():
+    """ Logs the user out of the web UI interface.
+
+    Functionally this just takes the api key cookie on the user's machine and
+    sets it to a dummy value and expires it immediately.
+
+    Args:
+        Uses the bottle response object, which can modify cookies on a user's
+        browser. 
+    Returns:
+        A modified, expried cookie on the user's browser.
+        Also redirects to this website's index page, which should redirect to
+        the login page.
+    """
+
+    response.set_cookie("api_key", "", expires=0)
+    redirect('/')
+    

@@ -1,7 +1,7 @@
 """
 The default User Management Interface where there is no login, and all logs are
 broadcasted to all Web UI WebSockets.
- """
+"""
 from user_management_interfaces import user_management_interface_base
 
 class NoAuth(user_management_interface_base.UserManagementInterfaceBase):
@@ -35,17 +35,20 @@ class NoAuth(user_management_interface_base.UserManagementInterfaceBase):
         return (True, "")
 
     def get_api_key_for_user(self, request):
-        """ Unused, but abstract so needs implementation"""
+        """ Unused, but abstract so needs implementation. """
         return ""
 
     def find_associated_websockets(self, api_key, websocket_connections):
-        """ We can't tell the difference between users,
-           so we just broadcast to everyone
+        """ We can't tell the difference between users, so we just broadcast to
+            everyone.
 
         Args:
-            The API Key, but this is an arbitrary value
-            The list of WebSockets that go to web UIs
+            api_key: The API Key, but this is an arbitrary value.
+            websocket_connections: A dictionary of api keys to associated
+                websockets. There should only be a single key that's a blank
+                string with a single array of websockets.
         Returns:
-            The list of WebSockets that go to web UIs
+            The list of WebSockets that go to web UIs.
         """
-        return websocket_connections
+        return sum([websockets for api_keys, websockets in 
+                    websocket_connections.items()], [])

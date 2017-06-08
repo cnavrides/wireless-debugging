@@ -16,7 +16,7 @@ from helpers import util
 # Store a dictionary of string -> function
 _ws_routes = {}
 # TODO: Reverse map to go API key -> websocket, rather than websocket -> API key
-_web_interface_ws_connections = {}
+_web_ui_ws_connections = {}
 
 
 @route('/ws')
@@ -24,8 +24,8 @@ def handle_websocket():
     """ Handle an incomming WebSocket connection.
 
     This function handles incomming WebSocket connections and waits for
-    incomming messages from the connection. When a message is recieved, it
-    calls the appropriate function.
+    incoming messages from the connection. When a message is recieved, it calls
+    the appropriate function.
     """
 
     websocket = request.environ.get('wsgi.websocket')
@@ -43,6 +43,7 @@ def handle_websocket():
                 continue
 
             decoded_message = json.loads(message)
+            print(decoded_message)
             message_type = decoded_message['messageType']
             if message_type is None:
                 # TODO: blow up
@@ -53,12 +54,26 @@ def handle_websocket():
         except WebSocketError:
             break
 
-    if websocket in _web_interface_ws_connections:
-        del _web_interface_ws_connections[websocket]
+    # If we have the api key, we can waste a little less time searching for the
+    # websocket.
+    ws_api_key = _websocket_metadata.get('apiKey', '')
+    if ws_api_key and ws_api_key in _web_ui_ws_connections:
+        _web_ui_ws_connections[_websocket_metadata['apiKey']].remove(websocket)
+    # ... Otherwise we have to search everywhere to find and delete it.
+    else:
+        for api_key, websockets in _web_ui_ws_connections.items():
+            if websocket in websockets: 
+                websockets.remove(websocket)
+                break
+
+    for api_key in list(_web_ui_ws_connections):
+        if not _web_ui_ws_connections[api_key]:
+            del _web_ui_ws_connections[api_key]
 
 
 def ws_router(message_type):
-    """ Provide a decorator for adding functions to the _ws_route dictionary """
+    """ Provide a decorator for adding functions to the _ws_route dictionary.
+    """
 
     def decorator(function):
         _ws_routes[message_type] = function
@@ -72,33 +87,31 @@ def start_session(message, websocket, metadata):
         websocket receiving the raw logs.
     """
 
-    # There's probably a better way to do this and it should be refactored
+    # There's probably a better way to do this and it should be refactored.
     for attribute, value in message.items():
         metadata[attribute] = value
 
 
 @ws_router('logDump')
 def log_dump(message, websocket, metadata):
-    """ Handles Log Dumps from the Mobile API
+    """ Handles Log Dumps from the Mobile API.
 
     When a log dump comes in from the Mobile API, this function takes the raw
     log data, parses it and sends the parsed data to all connected web clients.
 
     Args:
-        message: the decoded JSON message from the Mobile API
-        websocket: the full websocket connection
+        message: The decoded JSON message from the Mobile API.
+        websocket: The websocket connection object where the log is being
+            received.
     """
 
     parsed_logs = LogParser.parse(message)
 
     api_key = metadata.get('apiKey', '')
-
-    # At first glance this looks like a copy, but this is actually grabbing the
-    # keys from a dict.
-    web_ws_connections = [ws for ws in _web_interface_ws_connections]
+    
     associated_websockets = ( 
         controller.user_management_interface.find_associated_websockets(api_key,
-            web_ws_connections))
+            _web_ui_ws_connections))
 
     for connection in associated_websockets:
         connection.send(util.serialize_to_json(parsed_logs))
@@ -113,16 +126,19 @@ def end_session(message, websocket, metadata):
 
 @ws_router('associateUser')
 def associate_user(message, websocket, metadata):
-    """ Associates a WebSocket connection with a session
+    """ Associates a Web UI WebSocket connection with a session.
 
     When a browser requests to be associated with a session, add the associated
     WebSocket connection to the list connections for that session.
 
     Args:
-        message: the decoded JSON message from the Mobile API
-        websocket: the full websocket connection
+        message: The decoded JSON message from the Mobile API. Contains the api
+            key for the user.
+        websocket: The websocket connection object where the log is being
+            received.
     """
 
-    # TODO: Currently we only have one session, when we implement multiple
-    #       connections, modify this to handle it
-    _web_interface_ws_connections[websocket] = message['apiKey']
+    if not _web_ui_ws_connections.get(message['apiKey'], ''):
+        _web_ui_ws_connections[message['apiKey']] = []
+
+    _web_ui_ws_connections.get(message['apiKey'], '').append(websocket)

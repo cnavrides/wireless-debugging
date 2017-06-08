@@ -95,3 +95,22 @@ def handle_login():
         abort(403, "Login failed, error: %s" % error_message)
     else:
         redirect('/')
+
+@route('/logout')
+def logout():
+    """ Logs the user out of the web UI interface.
+
+    Functionally this just takes the api key cookie on the user's machine and
+    sets it to a dummy value and expires it immediately.
+
+    Args:
+        Uses the bottle response object, which can modify cookies on a user's
+        browser. 
+    Returns:
+        A modified, expried cookie on the user's browser.
+        Also redirects to this website's index page, which should redirect to
+        the login page.
+    """
+
+    response.set_cookie("api_key", "", expires=0)
+    redirect('/')

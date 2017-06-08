@@ -56,7 +56,8 @@ def handle_websocket():
 
     # If we have the api key, we can waste a little less time searching for the
     # websocket.
-    if _websocket_metadata.get('apiKey', ''):
+    ws_api_key = _websocket_metadata.get('apiKey', '')
+    if ws_api_key and ws_api_key in _web_ui_ws_connections:
         _web_ui_ws_connections[_websocket_metadata['apiKey']].remove(websocket)
     # ... Otherwise we have to search everywhere to find and delete it.
     else:

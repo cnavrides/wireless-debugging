@@ -69,11 +69,6 @@ def handle_websocket():
         if not _web_ui_ws_connections[api_key]:
             del _web_ui_ws_connections[api_key]
 
-    ''' ded
-    if websocket in _web_ui_ws_connections:
-        del _web_ui_ws_connections[websocket]
-    '''
-
 
 def ws_router(message_type):
     """ Provide a decorator for adding functions to the _ws_route dictionary.
@@ -112,12 +107,6 @@ def log_dump(message, websocket, metadata):
     parsed_logs = LogParser.parse(message)
 
     api_key = metadata.get('apiKey', '')
-
-    ''' ded
-    # At first glance this looks like a copy, but this is actually grabbing the
-    # keys from a dict.
-    web_ws_connections = [ws for ws in _web_ui_ws_connections]
-    '''
     
     associated_websockets = ( 
         controller.user_management_interface.find_associated_websockets(api_key,
@@ -147,12 +136,6 @@ def associate_user(message, websocket, metadata):
         websocket: The websocket connection object where the log is being
             received.
     """
-
-    ''' ded
-    # TODO: Currently we only have one session, when we implement multiple
-    #       connections, modify this to handle it.
-    #_web_ui_ws_connections[websocket] = message['apiKey']
-    '''
 
     if not _web_ui_ws_connections.get(message['apiKey'], ''):
         _web_ui_ws_connections[message['apiKey']] = []

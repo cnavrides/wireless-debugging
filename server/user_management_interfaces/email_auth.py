@@ -133,9 +133,18 @@ class EmailAuth(user_management_interface_base.UserManagementInterfaceBase):
                         request.forms.get('username'))][1])
 
     def find_associated_websockets(self, api_key, websocket_connections):
-        # TODO: Make it so that this function returns a list of websockets that
-        #       correspond with the given api_key
-        return websocket_connections
+        """ Returns a list of websockets that correspond to the given api key.
+
+        Args:
+            api_key: String, contains an api_key that identifies a user.
+            websocket_connections: A dictionary of api keys -> lists of
+                websockets.
+        Returns:
+            A list of websockets corresponding to the api key. If there is no
+            key in the dictionary that corresponds to the given api_key, returns
+            and empty list.
+        """
+        return websocket_connections.get(api_key, [])
 
     def get_table(self):
         """ Returns the table of users to api keys as a list of tuples. 

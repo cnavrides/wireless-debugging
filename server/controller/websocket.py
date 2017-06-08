@@ -65,7 +65,7 @@ def handle_websocket():
                 websockets.remove(websocket)
                 break
 
-    for api_key in _web_ui_ws_connections:
+    for api_key in list(_web_ui_ws_connections):
         if not _web_ui_ws_connections[api_key]:
             del _web_ui_ws_connections[api_key]
 
@@ -154,7 +154,7 @@ def associate_user(message, websocket, metadata):
     #_web_ui_ws_connections[websocket] = message['apiKey']
     '''
 
-    if not _web_ui_ws_connections[message['apiKey']]:
+    if not _web_ui_ws_connections.get(message['apiKey'], ''):
         _web_ui_ws_connections[message['apiKey']] = []
 
-    _web_ui_ws_connections[message['apiKey']].append(websocket)
+    _web_ui_ws_connections.get(message['apiKey'], '').append(websocket)

@@ -50,4 +50,5 @@ class NoAuth(user_management_interface_base.UserManagementInterfaceBase):
         Returns:
             The list of WebSockets that go to web UIs.
         """
-        return websocket_connections
+        return sum([websockets for api_keys, websockets in 
+                    websocket_connections.items()], [])

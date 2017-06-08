@@ -6,6 +6,7 @@ import os
 
 from user_management_interfaces import email_auth
 from bottle import request, response
+from tests.dummy_socket import DummySocket
 
 def test_get_login():
     """ Verify that the login UI is read from fie and returned properly.
@@ -159,4 +160,12 @@ def test_find_websockets():
 
     umi = email_auth.EmailAuth()
 
-    assert False
+    api_key = 'b'
+    websockets = {
+        'a': [DummySocket() for i in range(5)],
+        'b': [DummySocket() for i in range(3)],
+        'c': [DummySocket() for i in range(7)],
+    }
+
+    assert umi.find_associated_websockets(api_key, websockets) == websockets[
+        api_key]

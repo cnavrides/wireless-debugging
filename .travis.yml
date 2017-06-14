@@ -1,13 +1,26 @@
-language: python
-python:
-    - "3.6"
-sudo: required
-install: pip install -r server/requirements.txt
-services:
-    - docker
-before_script:
-    - docker pull mongo
-    - docker run -dp 27017:27017 mongo:3.4.4
-script:
-    - cd server
-    - pytest -vv
+matrix:
+  include:
+    - language: python
+      python: 3.6
+      sudo: required
+      install: pip install -r server/requirements.txt
+      services:
+        - docker
+      before_script:
+        - docker pull mongo
+        - docker run -dp 27017:27017 mongo:3.4.4
+        - cd server
+      script:
+        - pytest -vv
+
+    - language: android
+      jdk: oraclejdk8
+      android:
+        components:
+          - tools
+          - android-25
+          - build-tools-25.0.3
+      before_script:
+        - cd mobile/android/WirelessDebug
+      script:
+        - ./gradlew build connectedCheck

@@ -17,11 +17,14 @@ matrix:
       jdk: oraclejdk8
       env:
         global:
-          - ANDROID_TARGET=android-25 ANDROID_ABI=armeabi-v7a
+          - ANDROID_TARGET=android-25
+          - ANDROID_ABI=armeabi-v7a
           - ADB_INSTALL_TIMEOUT=10
       android:
         update_sdk: true
         components:
+          - tools
+          - platform-tools
           - tools
           - android-25
           - build-tools-25.0.2

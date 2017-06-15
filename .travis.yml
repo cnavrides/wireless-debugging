@@ -17,25 +17,30 @@ matrix:
       jdk: oraclejdk8
       env:
         global:
-          - ANDROID_TARGET=android-25
+          - ANDROID_API_LEVEL=25
+          - EMULATOR_API_LEVEL=21
+          - BUILD_TOOLS_VERSION=25.0.2
           - ANDROID_ABI=armeabi-v7a
-          - ADB_INSTALL_TIMEOUT=10
+          - ANDROID_TAG=google_apis
+          - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
       android:
         update_sdk: true
         components:
           - tools
           - platform-tools
           - tools
-          - android-25
-          - build-tools-25.0.2
+          - android-$ANDROID_API_LEVEL
+          - build-tools-$BUILD_TOOLS_VERSION
+          - extra-google-m2repository
           - extra-android-m2repository
-          - sys-img-armeabi-v7a-android-25
+          - sys-img-armeabi-v7a-$ANDROID_TAG-$ANDROID_API_LEVEL
+          - sys-img-armeabi-v7a-$ANDROID_TAG-$EMULATOR_API_LEVEL
       before_script:
         - cd mobile/android/WirelessDebug
 
         # Create an emulator.
         - android list targets
-        - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi ANDROID_ABI
+        - echo no | android create avd --force -n test -t android-$ANDROID_API_LEVEL --abi ANDROID_ABI
         - emulator -avd test -no-skin -no-audio -no-window & # Start emulator
         - android-wait-for-emulator
         - adb shell input keyevent 82 &

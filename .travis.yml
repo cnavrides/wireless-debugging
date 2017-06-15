@@ -15,13 +15,26 @@ matrix:
 
     - language: android
       jdk: oraclejdk8
+      env:
+        global:
+          - ANDROID_TARGET=android-25 ANDROID_ABI=armeabi-v7a
+          - ADB_INSTALL_TIMEOUT=10
       android:
+        update_sdk: true
         components:
           - tools
           - android-25
           - build-tools-25.0.2
           - extra-android-m2repository
+          - sys-img-armeabi-v7a-android-25
       before_script:
         - cd mobile/android/WirelessDebug
+
+        # Create an emulator.
+        - android list targets
+        - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi ANDROID_ABI
+        - emulator -avd test -no-skin -no-audio -no-window & # Start emulator
+        - android-wait-for-emulator
+        - adb shell input keyevent 82 &
       script:
         - ./gradlew build connectedCheck

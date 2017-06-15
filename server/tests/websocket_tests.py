@@ -23,7 +23,7 @@ def test_start_session():
     websocket._ws_routes[message['messageType']](message, socket, _metadata)
 
     # Just ensure that the start time was added, since it is set to
-    # datetime.now, we can't do a full camparison.
+    # datetime.now, we can't do a full comparison.
     assert 'startTime' in _metadata
     _metadata.pop('startTime')
 

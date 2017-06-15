@@ -1,13 +1,48 @@
-language: python
-python:
-    - "3.6"
-sudo: required
-install: pip install -r server/requirements.txt
-services:
-    - docker
-before_script:
-    - docker pull mongo
-    - docker run -dp 27017:27017 mongo:3.4.4
-script:
-    - cd server
-    - pytest -vv
+matrix:
+  include:
+    - language: python
+      python: 3.6
+      sudo: required
+      install: pip install -r server/requirements.txt
+      services:
+        - docker
+      before_script:
+        - docker pull mongo
+        - docker run -dp 27017:27017 mongo:3.4.4
+        - cd server
+      script:
+        - pytest -vv
+
+    - language: android
+      jdk: oraclejdk8
+      env:
+        global:
+          - ANDROID_API_LEVEL=25
+          - EMULATOR_API_LEVEL=21
+          - BUILD_TOOLS_VERSION=25.0.2
+          - ANDROID_ABI=armeabi-v7a
+          - ANDROID_TAG=google_apis
+          - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
+      android:
+        update_sdk: true
+        components:
+          - tools
+          - platform-tools
+          - tools
+          - android-$ANDROID_API_LEVEL
+          - build-tools-$BUILD_TOOLS_VERSION
+          - extra-google-m2repository
+          - extra-android-m2repository
+          - sys-img-armeabi-v7a-$ANDROID_TAG-$ANDROID_API_LEVEL
+          - sys-img-armeabi-v7a-$ANDROID_TAG-$EMULATOR_API_LEVEL
+      before_script:
+        - cd mobile/android/WirelessDebug
+
+        # Create an emulator.
+        - android list targets
+        - echo no | android create avd --force -n test -t android-$ANDROID_API_LEVEL --abi ANDROID_ABI
+        - emulator -avd test -no-skin -no-audio -no-window & # Start emulator
+        - android-wait-for-emulator
+        - adb shell input keyevent 82 &
+      script:
+        - ./gradlew build connectedCheck

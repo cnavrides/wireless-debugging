@@ -29,37 +29,6 @@ matrix:
       after_script:
         - codecov
 
-    - language: android
-      jdk: oraclejdk8
-      env:
-        global:
-          - ANDROID_API_LEVEL=25
-          - BUILD_TOOLS_VERSION=25.0.2
-          - ANDROID_ABI=armeabi-v7a
-          - ANDROID_TAG=google_apis
-          - ADB_INSTALL_TIMEOUT=20 # minutes (2 minutes by default)
-      android:
-        update_sdk: true
-        components:
-          - tools
-          - android-$ANDROID_API_LEVEL
-          - build-tools-$BUILD_TOOLS_VERSION
-          - extra-android-m2repository
-          - sys-img-armeabi-v7a-$ANDROID_TAG-$ANDROID_API_LEVEL
-      before_script:
-        - cd mobile/android/WirelessDebugger
-
-        # Create an emulator.
-        - android list targets
-        - echo no | android create avd --force -n test -t android-$ANDROID_API_LEVEL --abi $ANDROID_TAG/$ANDROID_ABI
-        - emulator -avd test -no-window & # Start emulator
-        - android-wait-for-emulator
-        - adb shell input keyevent 82 &
-      script:
-        - ./gradlew build connectedAndroidTest test
-      after_success: 
-        — bash <(curl -s https://codecov.io/bash)
-
     - language: swift
       osx_image: xcode8.3
       before_script:
@@ -68,3 +37,7 @@ matrix:
         - xcodebuild -scheme Test -destination 'platform=iOS Simulator,name=iPhone 7,OS=10.3.1' build test
       after_success:
         - bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  slack:
+    secure: IQiN2AhZfF2YIKKFR/+OOzKCJcle447VJJuf4rBKlacqv3RotzTx0zKxGl6w6e9opGeSbAGrmUOtR8isGSPe8hYfWxV4QVeetQvsGGygIavMe7JOn0bridwsbTIa1XbiMv/jYaL2fl8QGLGkVHkP8VgQmj4KaqSftN2P2gJ6QCgF3zDQEz2Yp3/a5Eni2n3Vfh2NzO5O3I3DrSFT7ohwIe+x9m+El8qP1Qqa+KB9MPkVcQxejzOzdcG2mIuWT9mrm5QDbs+SRtpUGbDZgiNdMzm7cwSsFHHI7TCjN3agSnSNWb6zbJChj5dqRRNXMLP5qnMr78jJ01p7vM+i2QVQoSf7sobe9XULFVkaRMDkdTXG3h6kOlflkInjE7RcHRyvJ/ELFE+FGPMgZaV4IO+OGbM4Z0FcRZ2KqNZUTc1vsvImJvfJ7oynDvRRqo04j4+W4XonHBKiQCL1TNa6MR2MsExSnBzhlk7nSePjb/CrU1btHluKvKwGgRhzmeZ/64sCkfFFq1rUcSnM8ymbL3R0q4XYdIyhzM6gV5BBvAUEBJDk0YUrK5U999VYHuRydVHWficRHq8ZFMCly4Z37a4K5ncxA6rIV+BtlTLQi8Zhuq/l/sG7oHhMFDNaqQWfKRttdJ/y40YCFOfZUX+wTH1IkRKJyxuabxULmBq5zCSWOlE=
